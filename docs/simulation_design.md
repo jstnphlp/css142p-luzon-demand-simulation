@@ -12,6 +12,10 @@ How far did Luzon electricity-demand behavior move away from its pre-pandemic pa
 
 These are analytical periods for this study, not official declarations of pandemic start/end dates.
 
+## NGCP hour-label convention
+
+The official workbook labels its 24 hourly columns as **Hour No. 1–24** but does not define clock-time labels within the workbook. The project preserves those source labels and uses a zero-based internal index only for modeling. Interpretive tables and plots should therefore report **NGCP Hour No.** rather than unsupported clock times.
+
 ## Data structure
 
 The NGCP Luzon worksheet is transformed from one row per date with 24 hourly demand columns into one row per hourly observation.
