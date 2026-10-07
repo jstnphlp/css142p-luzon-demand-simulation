@@ -9,7 +9,7 @@ from typing import Iterable
 import numpy as np
 import pandas as pd
 
-from .config import PERIOD_RANGES
+from .config import NGCP_DATE_COLUMN, NGCP_HEADER_ROW, NGCP_LUZON_SHEET, PERIOD_RANGES
 
 
 def classify_period(year: int) -> str:
@@ -86,8 +86,9 @@ def _detect_hour_columns(df: pd.DataFrame, date_col: str) -> tuple[list[str], di
     if {v for _, v in numeric_named} >= set(range(1, 25)):
         ordered = [next(c for c, v in numeric_named if v == i) for i in range(1, 25)]
         warnings.warn(
-            "Detected hour columns labeled 1..24. They are mapped sequentially to analysis hours 0..23. "
-            "Verify the NGCP workbook's hour convention before interpreting peak-clock labels.",
+            "Detected NGCP Hour No. columns 1..24. They are preserved in source_hour_label and mapped "
+            "to a zero-based analysis index 0..23. The workbook itself does not define clock-time labels, "
+            "so report NGCP Hour No. (1..24) unless an external source establishes a clock-time convention.",
             stacklevel=2,
         )
         return ordered, {c: i for i, c in enumerate(ordered)}
@@ -173,9 +174,9 @@ def clean_hourly_data(hourly_df: pd.DataFrame) -> pd.DataFrame:
 def prepare_dataset(
     excel_path: str | Path,
     *,
-    sheet_name: str = "Luzon",
-    header: int = 0,
-    date_col: str | None = None,
+    sheet_name: str = NGCP_LUZON_SHEET,
+    header: int = NGCP_HEADER_ROW,
+    date_col: str | None = NGCP_DATE_COLUMN,
     study_only: bool = True,
 ) -> pd.DataFrame:
     raw = pd.read_excel(excel_path, sheet_name=sheet_name, header=header)
@@ -211,12 +212,13 @@ def data_quality_report(df: pd.DataFrame) -> pd.DataFrame:
 def main() -> None:
     parser = argparse.ArgumentParser(description="Prepare NGCP Luzon hourly demand data.")
     parser.add_argument("input", type=Path)
-    parser.add_argument("--sheet", default="Luzon")
-    parser.add_argument("--header", type=int, default=0)
+    parser.add_argument("--sheet", default=NGCP_LUZON_SHEET)
+    parser.add_argument("--header", type=int, default=NGCP_HEADER_ROW)
+    parser.add_argument("--date-col", default=NGCP_DATE_COLUMN)
     parser.add_argument("--output", type=Path, default=Path("data/processed/luzon_hourly_clean.csv"))
     args = parser.parse_args()
 
-    df = prepare_dataset(args.input, sheet_name=args.sheet, header=args.header)
+    df = prepare_dataset(args.input, sheet_name=args.sheet, header=args.header, date_col=args.date_col)
     args.output.parent.mkdir(parents=True, exist_ok=True)
     df.to_csv(args.output, index=False)
     print(data_quality_report(df).to_string(index=False))
