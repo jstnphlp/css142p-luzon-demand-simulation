@@ -12,6 +12,9 @@ from .config import (
     DEFAULT_TEST_FRACTION,
     FIGURES_DIR,
     MODELS_DIR,
+    NGCP_DATE_COLUMN,
+    NGCP_HEADER_ROW,
+    NGCP_LUZON_SHEET,
     PERIOD_ORDER,
     PROCESSED_DIR,
     RESULTS_DIR,
@@ -27,8 +30,9 @@ from .validation import validate_model
 def run_pipeline(
     input_path: Path,
     *,
-    sheet_name: str = "Luzon",
-    header: int = 0,
+    sheet_name: str = NGCP_LUZON_SHEET,
+    header: int = NGCP_HEADER_ROW,
+    date_col: str = NGCP_DATE_COLUMN,
     n_runs: int = DEFAULT_SIMULATION_RUNS,
     seed: int = DEFAULT_RANDOM_SEED,
     test_fraction: float = DEFAULT_TEST_FRACTION,
@@ -37,7 +41,7 @@ def run_pipeline(
         directory.mkdir(parents=True, exist_ok=True)
 
     print("[1/7] Preparing dataset...")
-    df = prepare_dataset(input_path, sheet_name=sheet_name, header=header, study_only=True)
+    df = prepare_dataset(input_path, sheet_name=sheet_name, header=header, date_col=date_col, study_only=True)
     df = add_daily_normalization(df)
     df.to_csv(PROCESSED_DIR / "luzon_hourly_clean.csv", index=False)
     data_quality_report(df).to_csv(RESULTS_DIR / "data_quality_report.csv", index=False)
@@ -93,8 +97,9 @@ def run_pipeline(
 def main() -> None:
     parser = argparse.ArgumentParser(description="Run the complete Luzon electricity-demand modeling and simulation pipeline.")
     parser.add_argument("input", type=Path, help="Path to the NGCP Hourly Demand per Grid Excel workbook.")
-    parser.add_argument("--sheet", default="Luzon")
-    parser.add_argument("--header", type=int, default=0)
+    parser.add_argument("--sheet", default=NGCP_LUZON_SHEET)
+    parser.add_argument("--header", type=int, default=NGCP_HEADER_ROW)
+    parser.add_argument("--date-col", default=NGCP_DATE_COLUMN)
     parser.add_argument("--runs", type=int, default=DEFAULT_SIMULATION_RUNS)
     parser.add_argument("--seed", type=int, default=DEFAULT_RANDOM_SEED)
     parser.add_argument("--test-fraction", type=float, default=DEFAULT_TEST_FRACTION)
@@ -104,6 +109,7 @@ def main() -> None:
         args.input,
         sheet_name=args.sheet,
         header=args.header,
+        date_col=args.date_col,
         n_runs=args.runs,
         seed=args.seed,
         test_fraction=args.test_fraction,
