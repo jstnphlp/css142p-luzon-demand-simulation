@@ -20,3 +20,8 @@ MODEL_FORMULA = "demand_mw ~ C(hour) * C(day_type) + C(month)"
 DEFAULT_TEST_FRACTION = 0.20
 DEFAULT_SIMULATION_RUNS = 1000
 DEFAULT_RANDOM_SEED = 42
+
+# Actual workbook layout for the official NGCP Hourly Demand per Grid file.
+NGCP_LUZON_SHEET = "LUZON HOURLY LOAD 2013-2025"
+NGCP_HEADER_ROW = 1
+NGCP_DATE_COLUMN = "DATE"
