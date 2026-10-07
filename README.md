@@ -29,7 +29,7 @@ See [`docs/simulation_design.md`](docs/simulation_design.md) for the full design
 ```text
 .
 ├── data/
-│   ├── raw/                 # Put NGCP Excel workbook here (not committed)
+│   ├── raw/                 # Official NGCP Excel workbook
 │   └── processed/           # Generated cleaned hourly CSV
 ├── docs/
 │   └── simulation_design.md
@@ -79,15 +79,15 @@ source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
-## Add the NGCP dataset
+## NGCP dataset
 
-Place the official workbook at:
+The official NGCP workbook is included at:
 
 ```text
 data/raw/Hourly Demand per Grid.xlsx
 ```
 
-The project intentionally does **not** commit the raw public dataset into Git so the source file can be downloaded/verified independently.
+The project uses the worksheet `LUZON HOURLY LOAD 2013-2025`, with the header on Excel row 2 and the date column labeled `DATE`.
 
 ## Run the complete pipeline
 
@@ -98,7 +98,7 @@ python -m src.pipeline "data/raw/Hourly Demand per Grid.xlsx"
 Optional:
 
 ```bash
-python -m src.pipeline "data/raw/Hourly Demand per Grid.xlsx" --sheet Luzon --runs 1000 --seed 42
+python -m src.pipeline "data/raw/Hourly Demand per Grid.xlsx" --runs 1000 --seed 42
 ```
 
 The pipeline will:
@@ -112,9 +112,11 @@ The pipeline will:
 7. validate against chronologically withheld data,
 8. compare normalized profiles and classify recovery behavior.
 
-## Important data check
+## Hour-label convention
 
-Before reporting peak-demand clock times, inspect the source workbook's 24 hourly column labels. The loader handles common formats and emits a warning when it must assume that a `1..24` layout maps sequentially to analysis hours `0..23`.
+The source workbook labels the 24 columns only as **Hour No. 1–24**. It does not provide an explicit clock-time definition in the workbook itself. The code preserves the original label in `source_hour_label` and maps it to a zero-based internal index `hour = Hour No. - 1` for modeling.
+
+For reports and presentations, use **NGCP Hour No. 1–24** rather than converting those labels into clock times unless a separate authoritative NGCP source establishes the clock-time convention.
 
 ## Main generated results
 
@@ -131,3 +133,10 @@ Expected CSV outputs include:
 - `validation_metrics.csv`
 - `pairwise_normalized_profile_rmse.csv`
 - `recovery_classification.csv`
+
+
+## Tests
+
+```bash
+python -m pytest -q
+```
