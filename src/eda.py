@@ -96,8 +96,8 @@ def save_eda_outputs(df: pd.DataFrame, figures_dir: str | Path, results_dir: str
     fig, ax = plt.subplots(figsize=(10, 5))
     width = 0.25
     for i, period in enumerate(PERIOD_ORDER):
-        part = phd[phd["period"] == period].set_index("peak_hour").reindex(range(24), fill_value=0)
-        ax.bar([h + (i - 1) * width for h in range(24)], part["share"], width=width, label=period)
+        shares = phd[phd["period"] == period].set_index("peak_hour")["share"].reindex(range(24), fill_value=0)
+        ax.bar([h + (i - 1) * width for h in range(24)], shares, width=width, label=period)
     ax.set(title="Distribution of Daily Peak-Demand Hour", xlabel="Peak hour", ylabel="Share of days", xticks=range(0, 24, 2))
     ax.legend()
     fig.tight_layout()
